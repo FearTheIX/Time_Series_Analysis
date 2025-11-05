@@ -77,29 +77,30 @@ class IntegratedAnalyticsPlatform:
         """Setup Lab 1: Web Scraping tab"""
         lab1_frame = ttk.Frame(self.notebook)
         self.notebook.add(lab1_frame, text="Lab 1: Web Scraping")
-        
+    
         # Web scraping section
-        scraping_group = ttk.LabelFrame(lab1_frame, text="Web Scraping (Lab 1)")
+        scraping_group = ttk.LabelFrame(lab1_frame, text="Web Scraping (Lab 1) - Central Bank of Russia")
         scraping_group.pack(fill='x', padx=10, pady=5)
-        
-        ttk.Label(scraping_group, text="Target URL:").grid(row=0, column=0, sticky='w', padx=5, pady=5)
-        self.url_entry = ttk.Entry(scraping_group, width=50)
-        self.url_entry.grid(row=0, column=1, padx=5, pady=5)
-        self.url_entry.insert(0, "https://www.example.com/currency-rates")
-        
+    
+        # Замените поле URL на поле для года
+        ttk.Label(scraping_group, text="Start Year:").grid(row=0, column=0, sticky='w', padx=5, pady=5)
+        self.start_year_entry = ttk.Entry(scraping_group, width=10)
+        self.start_year_entry.grid(row=0, column=1, padx=5, pady=5)
+        self.start_year_entry.insert(0, "2020")  # Год по умолчанию
+    
         self.scrape_btn = ttk.Button(scraping_group, text="Start Scraping", command=self.start_web_scraping)
         self.scrape_btn.grid(row=0, column=2, padx=5, pady=5)
-        
+    
         # Results display
         ttk.Label(lab1_frame, text="Scraping Results:").pack(anchor='w', padx=10, pady=(10,0))
-        
+    
         results_frame = tk.Frame(lab1_frame)
         results_frame.pack(fill='both', expand=True, padx=10, pady=10)
-        
+    
         self.scraping_results = tk.Text(results_frame, height=15, width=100)
         scrollbar = ttk.Scrollbar(results_frame, orient="vertical", command=self.scraping_results.yview)
         self.scraping_results.configure(yscrollcommand=scrollbar.set)
-        
+    
         self.scraping_results.pack(side='left', fill='both', expand=True)
         scrollbar.pack(side='right', fill='y')
     
@@ -262,44 +263,43 @@ class IntegratedAnalyticsPlatform:
         self.status_display.insert(1.0, status_text)
 
     def start_web_scraping(self):
-        """Start web scraping for currency data"""
+        """Start web scraping for currency data from Central Bank of Russia"""
         if not SCRAPER_AVAILABLE:
             messagebox.showwarning("Warning", "Lab 1 module not available")
             return
-            
-        url = self.url_entry.get().strip()
-        if not url:
-            messagebox.showwarning("Warning", "Please enter a URL")
-            return
-            
+        
         try:
-            self.scraping_results.insert(tk.END, f"Starting scraping from: {url}\n")
+            self.scraping_results.insert(tk.END, "Starting currency data scraping from Central Bank of Russia...\n")
             self.scraping_results.see(tk.END)
-            
+        
             scraper = CurrencyScraper()
-            data = scraper.scrape_currency_data(url)
+        
+            # Правильный вызов метода - без URL, так как он использует фиксированный URL ЦБ РФ
+            data = scraper.scrape_data(start_year=2020)  # Можно изменить год начала
+        
+            if data and len(data) > 0:
+                # Преобразуем данные в DataFrame для совместимости
+                df = pd.DataFrame(data, columns=['date', 'rate'])
+                self.scraping_results.insert(tk.END, f"Scraping completed! Found {len(df)} records\n")
+                self.current_data = df
             
-            if data is not None and not data.empty:
-                self.scraping_results.insert(tk.END, f"Scraping completed! Found {len(data)} records\n")
-                self.current_data = data
-                
-                # Save scraped data
-                filename = filedialog.asksaveasfilename(
-                    title="Save Scraped Data", 
-                    defaultextension=".csv",
-                    filetypes=[("CSV Files", "*.csv")]
-                )
-                if filename:
-                    data.to_csv(filename, index=False)
-                    self.scraping_results.insert(tk.END, f"Data saved to: {filename}\n")
+            # Save scraped data
+            filename = filedialog.asksaveasfilename(
+                title="Save Scraped Data", 
+                defaultextension=".csv",
+                filetypes=[("CSV Files", "*.csv")]
+            )
+            if filename:
+                df.to_csv(filename, index=False)
+                self.scraping_results.insert(tk.END, f"Data saved to: {filename}\n")
             else:
                 self.scraping_results.insert(tk.END, "No data found or scraping failed\n")
-                
+            
         except Exception as e:
             error_msg = f"Scraping error: {str(e)}\n"
             self.scraping_results.insert(tk.END, error_msg)
             messagebox.showerror("Error", error_msg)
-        
+    
         self.scraping_results.see(tk.END)
 
     def select_dataset_folder(self):
