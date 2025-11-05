@@ -10,33 +10,38 @@ import os
 import datetime
 import pandas as pd
 
-# Import modules from different labs
+# Import modules from different labs - GLOBAL SCOPE
 try:
-    from AI.lab6_gui import Lab6GUI
-    LAB6_AVAILABLE = True
-except ImportError:
-    LAB6_AVAILABLE = False
-    print("Warning: Lab 6 modules not found")
     from currency_scrapper_v2 import CurrencyScraper
     SCRAPER_AVAILABLE = True
-except ImportError:
+except ImportError as e:
     SCRAPER_AVAILABLE = False
-    print("Warning: Lab 1 module (currency_scrapper_v2) not found")
+    print(f"Warning: Lab 1 module not found: {e}")
 
 try:
     from data_processor import CurrencyDataProcessor, get_rate_single_file, get_rate_x_y, get_rate_year_files, get_rate_week_files
     from annotation_creator import create_annotation_file, create_reorganized_dataset
     LAB3_AVAILABLE = True
-except ImportError:
+except ImportError as e:
     LAB3_AVAILABLE = False
-    print("Warning: Lab 3 modules not found")
+    print(f"Warning: Lab 3 modules not found: {e}")
 
 try:
     from time_series_analyzer import TimeSeriesAnalyzer
     LAB4_AVAILABLE = True
-except ImportError:
+except ImportError as e:
     LAB4_AVAILABLE = False
-    print("Warning: Lab 4 module not found")
+    print(f"Warning: Lab 4 module not found: {e}")
+
+# Try to import Lab 6 modules
+try:
+    from AI.advanced_analyzer import AdvancedTimeSeriesAnalyzer
+    from AI.model_trainer import ModelTrainer
+    from AI.hyperparameter_tuner import HyperparameterTuner
+    LAB6_AVAILABLE = True
+except ImportError as e:
+    LAB6_AVAILABLE = False
+    print(f"Warning: Lab 6 modules not found: {e}")
 
 
 class IntegratedAnalyticsPlatform:
@@ -69,10 +74,10 @@ class IntegratedAnalyticsPlatform:
             
         if LAB4_AVAILABLE:
             self.setup_lab4_tab()
-            
-        # Lab 6 Tab - Advanced Analysis
+        
+        # Add Lab 6 tab if available
         if LAB6_AVAILABLE:
-            self.setup_lab6_tab()    
+            self.setup_lab6_tab()
         
         # Add testing tab
         self.setup_testing_tab()
@@ -86,30 +91,30 @@ class IntegratedAnalyticsPlatform:
         """Setup Lab 1: Web Scraping tab"""
         lab1_frame = ttk.Frame(self.notebook)
         self.notebook.add(lab1_frame, text="Lab 1: Web Scraping")
-    
+        
         # Web scraping section
         scraping_group = ttk.LabelFrame(lab1_frame, text="Web Scraping (Lab 1) - Central Bank of Russia")
         scraping_group.pack(fill='x', padx=10, pady=5)
-    
-        # Замените поле URL на поле для года
+        
+        # Replace URL field with year field
         ttk.Label(scraping_group, text="Start Year:").grid(row=0, column=0, sticky='w', padx=5, pady=5)
         self.start_year_entry = ttk.Entry(scraping_group, width=10)
         self.start_year_entry.grid(row=0, column=1, padx=5, pady=5)
-        self.start_year_entry.insert(0, "2020")  # Год по умолчанию
-    
+        self.start_year_entry.insert(0, "2020")  # Default year
+        
         self.scrape_btn = ttk.Button(scraping_group, text="Start Scraping", command=self.start_web_scraping)
         self.scrape_btn.grid(row=0, column=2, padx=5, pady=5)
-    
+        
         # Results display
         ttk.Label(lab1_frame, text="Scraping Results:").pack(anchor='w', padx=10, pady=(10,0))
-    
+        
         results_frame = tk.Frame(lab1_frame)
         results_frame.pack(fill='both', expand=True, padx=10, pady=10)
-    
+        
         self.scraping_results = tk.Text(results_frame, height=15, width=100)
         scrollbar = ttk.Scrollbar(results_frame, orient="vertical", command=self.scraping_results.yview)
         self.scraping_results.configure(yscrollcommand=scrollbar.set)
-    
+        
         self.scraping_results.pack(side='left', fill='both', expand=True)
         scrollbar.pack(side='right', fill='y')
     
@@ -186,26 +191,32 @@ class IntegratedAnalyticsPlatform:
         
         # Data loading section
         load_group = ttk.LabelFrame(lab4_frame, text="Data Loading")
-        load_group.pack(fill='x', padx=10, pady=5)
+        load_layout = ttk.Frame(load_group)
+        load_layout.pack(fill='x', padx=5, pady=5)
         
-        self.load_data_btn = ttk.Button(load_group, text="Load Time Series Data", command=self.load_timeseries_data)
+        self.load_data_btn = ttk.Button(load_layout, text="Load Time Series Data", command=self.load_timeseries_data)
         self.load_data_btn.pack(side='left', padx=5, pady=5)
         
-        self.data_info_label = ttk.Label(load_group, text="No data loaded")
+        self.data_info_label = ttk.Label(load_layout, text="No data loaded")
         self.data_info_label.pack(side='left', padx=5, pady=5)
+        
+        load_group.pack(fill='x', padx=10, pady=5)
         
         # Analysis controls
         analysis_group = ttk.LabelFrame(lab4_frame, text="Time Series Analysis")
-        analysis_group.pack(fill='x', padx=10, pady=5)
+        analysis_layout = ttk.Frame(analysis_group)
+        analysis_layout.pack(fill='x', padx=5, pady=5)
         
-        self.stationarity_btn = ttk.Button(analysis_group, text="Stationarity Analysis", command=self.analyze_stationarity)
+        self.stationarity_btn = ttk.Button(analysis_layout, text="Stationarity Analysis", command=self.analyze_stationarity)
         self.stationarity_btn.pack(side='left', padx=5, pady=5)
         
-        self.build_arima_btn = ttk.Button(analysis_group, text="Build ARIMA Model", command=self.build_arima_model)
+        self.build_arima_btn = ttk.Button(analysis_layout, text="Build ARIMA Model", command=self.build_arima_model)
         self.build_arima_btn.pack(side='left', padx=5, pady=5)
         
-        self.forecast_btn = ttk.Button(analysis_group, text="Generate Forecast", command=self.generate_forecast)
+        self.forecast_btn = ttk.Button(analysis_layout, text="Generate Forecast", command=self.generate_forecast)
         self.forecast_btn.pack(side='left', padx=5, pady=5)
+        
+        analysis_group.pack(fill='x', padx=10, pady=5)
         
         # Results display
         ttk.Label(lab4_frame, text="Analysis Results:").pack(anchor='w', padx=10, pady=(10,0))
@@ -219,20 +230,48 @@ class IntegratedAnalyticsPlatform:
         
         self.lab4_results.pack(side='left', fill='both', expand=True)
         scrollbar.pack(side='right', fill='y')
-
-    def setup_lab6_tab(self):
-        """Setup Lab 6: Advanced Time Series Analysis"""
-        if not LAB6_AVAILABLE:
-            lab6_frame = ttk.Frame(self.notebook)
-            self.notebook.add(lab6_frame, text="Lab 6: Advanced Analysis")
-            ttk.Label(lab6_frame, text="Lab 6 modules not available").pack(pady=20)
-            return
     
+    def setup_lab6_tab(self):
+        """Setup Lab 6: Advanced Time Series Analysis tab"""
         lab6_frame = ttk.Frame(self.notebook)
         self.notebook.add(lab6_frame, text="Lab 6: Advanced Analysis")
-    
-        # Initialize Lab 6 GUI
-        self.lab6_gui = Lab6GUI(lab6_frame)    
+        
+        # Simple interface for Lab 6
+        info_frame = ttk.LabelFrame(lab6_frame, text="Laboratory Work 6 - Advanced Time Series Analysis")
+        info_frame.pack(fill='both', expand=True, padx=10, pady=10)
+        
+        info_text = """
+        Laboratory Work 6: Advanced Time Series Analysis and Modeling
+        
+        This laboratory work includes:
+        
+        1. Comprehensive time series analysis
+        2. SARIMA and regression model training
+        3. Hyperparameter tuning
+        4. Model evaluation and selection
+        
+        To use Lab 6 features:
+        
+        1. Ensure all required packages are installed:
+           - scikit-learn
+           - statsmodels
+           - seaborn
+        
+        2. Use the modules in the 'lab6' folder:
+           - advanced_analyzer.py
+           - model_trainer.py
+           - hyperparameter_tuner.py
+        
+        3. Run the analysis through the provided classes.
+        
+        Note: Full GUI integration for Lab 6 is in development.
+        For now, use the Python modules directly.
+        """
+        
+        lab6_text = tk.Text(info_frame, height=20, width=100, wrap=tk.WORD)
+        lab6_text.insert(tk.END, info_text)
+        lab6_text.config(state=tk.DISABLED)
+        lab6_text.pack(padx=10, pady=10, fill='both', expand=True)
     
     def setup_testing_tab(self):
         """Setup testing and diagnostics tab"""
@@ -281,48 +320,75 @@ class IntegratedAnalyticsPlatform:
         status_text += f"Lab 1 (Web Scraping): {'Available' if SCRAPER_AVAILABLE else 'Not Available'}\n"
         status_text += f"Lab 3 (Data Processing): {'Available' if LAB3_AVAILABLE else 'Not Available'}\n"
         status_text += f"Lab 4 (Time Series): {'Available' if LAB4_AVAILABLE else 'Not Available'}\n"
+        status_text += f"Lab 6 (Advanced Analysis): {'Available' if LAB6_AVAILABLE else 'Not Available'}\n"
         
         self.status_display.delete(1.0, tk.END)
         self.status_display.insert(1.0, status_text)
+
+    # ... (остальные методы остаются без изменений)
+    # start_web_scraping, select_dataset_folder, create_annotation, split_to_xy, 
+    # split_by_years, split_by_weeks, search_date, load_timeseries_data, 
+    # analyze_stationarity, build_arima_model, generate_forecast, 
+    # run_all_tests, test_lab1, test_lab3, test_lab4, log
 
     def start_web_scraping(self):
         """Start web scraping for currency data from Central Bank of Russia"""
         if not SCRAPER_AVAILABLE:
             messagebox.showwarning("Warning", "Lab 1 module not available")
             return
-        
+            
         try:
-            self.scraping_results.insert(tk.END, "Starting currency data scraping from Central Bank of Russia...\n")
+            # Get year from input field
+            year_text = self.start_year_entry.get().strip()
+            if not year_text:
+                messagebox.showwarning("Warning", "Please enter a start year")
+                return
+                
+            try:
+                start_year = int(year_text)
+                if start_year < 1990 or start_year > datetime.datetime.now().year:
+                    messagebox.showwarning("Warning", "Please enter a valid year (1990-current)")
+                    return
+            except ValueError:
+                messagebox.showwarning("Warning", "Please enter a valid year number")
+                return
+            
+            self.scraping_results.insert(tk.END, f"Starting currency data scraping from year {start_year}...\n")
             self.scraping_results.see(tk.END)
-        
+            
             scraper = CurrencyScraper()
-        
-            # Правильный вызов метода - без URL, так как он использует фиксированный URL ЦБ РФ
-            data = scraper.scrape_data(start_year=2020)  # Можно изменить год начала
-        
+            
+            # Correct method call with start year
+            data = scraper.scrape_data(start_year=start_year)
+            
             if data and len(data) > 0:
-                # Преобразуем данные в DataFrame для совместимости
+                # Convert data to DataFrame for compatibility
                 df = pd.DataFrame(data, columns=['date', 'rate'])
                 self.scraping_results.insert(tk.END, f"Scraping completed! Found {len(df)} records\n")
                 self.current_data = df
-            
-            # Save scraped data
-            filename = filedialog.asksaveasfilename(
-                title="Save Scraped Data", 
-                defaultextension=".csv",
-                filetypes=[("CSV Files", "*.csv")]
-            )
-            if filename:
-                df.to_csv(filename, index=False)
-                self.scraping_results.insert(tk.END, f"Data saved to: {filename}\n")
+                
+                # Save scraped data
+                filename = filedialog.asksaveasfilename(
+                    title="Save Scraped Data", 
+                    defaultextension=".csv",
+                    filetypes=[("CSV Files", "*.csv")]
+                )
+                if filename:
+                    df.to_csv(filename, index=False)
+                    self.scraping_results.insert(tk.END, f"Data saved to: {filename}\n")
+                    
+                # Show first few records
+                self.scraping_results.insert(tk.END, "\nFirst 5 records:\n")
+                for i, (date, rate) in enumerate(data[:5]):
+                    self.scraping_results.insert(tk.END, f"  {date}: {rate}\n")
             else:
                 self.scraping_results.insert(tk.END, "No data found or scraping failed\n")
-            
+                
         except Exception as e:
             error_msg = f"Scraping error: {str(e)}\n"
             self.scraping_results.insert(tk.END, error_msg)
             messagebox.showerror("Error", error_msg)
-    
+        
         self.scraping_results.see(tk.END)
 
     def select_dataset_folder(self):
