@@ -8,8 +8,8 @@ A comprehensive Python toolkit for time series analysis and forecasting using AR
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/time-series-arima.git
-cd time-series-arima
+git clone https://github.com/FearTheIX/Time_Series_Arima.git
+cd Time_Series_Arima
 
 # Install dependencies
 pip install -r requirements.txt
