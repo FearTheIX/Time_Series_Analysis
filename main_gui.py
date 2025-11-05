@@ -12,6 +12,11 @@ import pandas as pd
 
 # Import modules from different labs
 try:
+    from AI.lab6_gui import Lab6GUI
+    LAB6_AVAILABLE = True
+except ImportError:
+    LAB6_AVAILABLE = False
+    print("Warning: Lab 6 modules not found")
     from currency_scrapper_v2 import CurrencyScraper
     SCRAPER_AVAILABLE = True
 except ImportError:
@@ -64,6 +69,10 @@ class IntegratedAnalyticsPlatform:
             
         if LAB4_AVAILABLE:
             self.setup_lab4_tab()
+            
+        # Lab 6 Tab - Advanced Analysis
+        if LAB6_AVAILABLE:
+            self.setup_lab6_tab()    
         
         # Add testing tab
         self.setup_testing_tab()
@@ -210,6 +219,20 @@ class IntegratedAnalyticsPlatform:
         
         self.lab4_results.pack(side='left', fill='both', expand=True)
         scrollbar.pack(side='right', fill='y')
+
+    def setup_lab6_tab(self):
+        """Setup Lab 6: Advanced Time Series Analysis"""
+        if not LAB6_AVAILABLE:
+            lab6_frame = ttk.Frame(self.notebook)
+            self.notebook.add(lab6_frame, text="Lab 6: Advanced Analysis")
+            ttk.Label(lab6_frame, text="Lab 6 modules not available").pack(pady=20)
+            return
+    
+        lab6_frame = ttk.Frame(self.notebook)
+        self.notebook.add(lab6_frame, text="Lab 6: Advanced Analysis")
+    
+        # Initialize Lab 6 GUI
+        self.lab6_gui = Lab6GUI(lab6_frame)    
     
     def setup_testing_tab(self):
         """Setup testing and diagnostics tab"""
